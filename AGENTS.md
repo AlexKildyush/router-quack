@@ -28,7 +28,14 @@ There is no specific linting tool configured for this project. However, the proj
 
 ### Test
 
-There are currently no tests in this project.
+To run the tests, execute the following command from the root directory:
+
+```bash
+dotnet test
+```
+
+The project uses TUnit as the testing framework with NSubstitute for mocking. Tests are located in the
+`tests/RouterQuack.Tests/` directory.
 
 ## 3. Code Style Guidelines
 
