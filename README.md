@@ -2,7 +2,10 @@
 
 A tool to generate router configurations from user-friendly intent files.
 
-![Router Quack screenshot](docs/images/router-quack-screen.png "Router Quack screenshot")
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/router-quack-screen-dark.png" />
+  <img src="docs/images/router-quack-screen-light.png" alt="Router Quack screenshot" title="Router Quack screenshot" />
+</picture>
 
 ## Overview
 
