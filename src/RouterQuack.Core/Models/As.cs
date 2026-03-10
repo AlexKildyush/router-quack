@@ -10,7 +10,9 @@ public sealed class As
 
     public required IgpType Igp { get; init; }
 
-    public required IPNetwork? LoopbackSpace { get; init; }
+    public required IPNetwork? LoopbackSpaceV4 { get; init; }
+
+    public IPNetwork? LoopbackSpaceV6 { get; init; }
 
     public required IPNetwork? NetworksSpaceV4 { get; init; }
 

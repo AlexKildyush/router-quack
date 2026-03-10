@@ -35,11 +35,11 @@ public class NetworkUtilsTests
     }
 
     [Test]
-    [Arguments(null, IpVersion.Ipv6)]
     [Arguments("ipv4", IpVersion.Ipv4)]
     [Arguments("IPv4", IpVersion.Ipv4)]
     [Arguments("ipv6", IpVersion.Ipv6)]
     [Arguments("IPv6", IpVersion.Ipv6)]
+    [Arguments(null, IpVersion.Ipv4 | IpVersion.Ipv6)]
     [Arguments("both", IpVersion.Ipv4 | IpVersion.Ipv6)]
     [Arguments("dual", IpVersion.Ipv4 | IpVersion.Ipv6)]
     [Arguments("dual stack", IpVersion.Ipv4 | IpVersion.Ipv6)]

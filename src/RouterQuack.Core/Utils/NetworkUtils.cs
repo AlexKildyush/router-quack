@@ -16,7 +16,7 @@ public sealed class NetworkUtils
     public IpVersion ParseIpVersion(string? version)
     {
         if (version == null)
-            return IpVersion.Ipv6;
+            return IpVersion.Ipv4 | IpVersion.Ipv6;
 
         ReadOnlySpan<string> bothTokens = ["both", "dual", "dual stack", "dual_stack", "dual-stack"];
         version = version.ToLowerInvariant();

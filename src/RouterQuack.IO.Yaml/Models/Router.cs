@@ -11,7 +11,9 @@ public class Router
 
     public string? Brand { get; init; }
 
-    public string? Loopback { get; init; }
+    public IPAddress? LoopbackV4 { get; init; }
+
+    public IPAddress? LoopbackV6 { get; init; }
 
     public bool? External { get; init; }
 

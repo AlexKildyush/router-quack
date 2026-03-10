@@ -61,6 +61,7 @@ public static class DependencyInjection
             .AddKeyedSingleton<IValidator, NoExternalRouterWithoutAddress>(nameof(NoExternalRouterWithoutAddress))
             .AddKeyedSingleton<IValidator, ValidBgpRelationships>(nameof(ValidBgpRelationships))
             .AddKeyedSingleton<IValidator, ValidLoopbackAddresses>(nameof(ValidLoopbackAddresses))
+            .AddKeyedSingleton<IValidator, ValidLoopbackSpaces>(nameof(ValidLoopbackSpaces))
             .AddKeyedSingleton<IValidator, ValidNetworkSpaces>(nameof(ValidNetworkSpaces));
 
         builder.Services

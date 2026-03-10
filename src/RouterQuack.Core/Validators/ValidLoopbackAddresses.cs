@@ -4,7 +4,7 @@ using RouterQuack.Core.Extensions;
 namespace RouterQuack.Core.Validators;
 
 /// <summary>
-/// Generate an error if a loopback address is not in /128 (or /32 in IPv4)
+/// Generate an error if a loopback address is not in /128 (or /32 in IPv4) or is of the wrong address family
 /// </summary>
 public class ValidLoopbackAddresses(ILogger<ValidLoopbackAddresses> logger, Context context) : IValidator
 {
@@ -18,14 +18,17 @@ public class ValidLoopbackAddresses(ILogger<ValidLoopbackAddresses> logger, Cont
     {
         var routers = Context.Asses
             .SelectMany(a => a.Routers)
-            .Where(r => r.LoopbackAddress is not null);
+            .Where(r => r.LoopbackAddressV4 is not null || r.LoopbackAddressV6 is not null);
 
         foreach (var router in routers)
         {
-            var maxBits = router.LoopbackAddress!.IpAddress.AddressFamily == AddressFamily.InterNetworkV6 ? 128 : 32;
+            if (router.LoopbackAddressV4 is not null
+                && router.LoopbackAddressV4?.AddressFamily != AddressFamily.InterNetwork)
+                this.Log(router, "Invalid loopback_v4 address");
 
-            if (router.LoopbackAddress.NetworkAddress.PrefixLength != maxBits)
-                this.Log(router, "Invalid loopback address");
+            if (router.LoopbackAddressV6 is not null
+                && router.LoopbackAddressV6?.AddressFamily != AddressFamily.InterNetworkV6)
+                this.Log(router, "Invalid loopback_v6 address");
         }
     }
 }

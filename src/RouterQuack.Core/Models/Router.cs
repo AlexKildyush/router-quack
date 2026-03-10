@@ -12,7 +12,9 @@ public sealed class Router
 
     public required RouterBrand Brand { get; init; }
 
-    public required Address? LoopbackAddress { get; set; }
+    public required IPAddress? LoopbackAddressV4 { get; set; }
+
+    public required IPAddress? LoopbackAddressV6 { get; set; }
 
     public required bool External { get; init; }
 

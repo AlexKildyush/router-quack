@@ -33,26 +33,13 @@ public partial class YamlParser
                 routerBrand = routerUtils.ParseBrand(defaultBrand.ToString());
             }
 
-            Address? loopbackAddress;
-            try
-            {
-                loopbackAddress = value.Loopback is not null
-                    ? new Address(value.Loopback)
-                    : null;
-            }
-            catch (ArgumentException)
-            {
-                this.LogError("Router {RouterName} in AS number {AsNumber}: Could not parse loopback address.",
-                    key, parentAs.Number);
-                loopbackAddress = null;
-            }
-
             var router = new Router
             {
                 Name = key,
                 Id = value.Id ?? routerUtils.GetDefaultId(key),
                 Brand = routerBrand,
-                LoopbackAddress = loopbackAddress,
+                LoopbackAddressV4 = value.LoopbackV4,
+                LoopbackAddressV6 = value.LoopbackV6,
                 Interfaces = [],
                 ParentAs = parentAs,
                 External = value.External ?? externalAs

@@ -33,7 +33,8 @@ public partial class YamlParser
             {
                 Number = key,
                 Igp = igp,
-                LoopbackSpace = value.LoopbackSpace,
+                LoopbackSpaceV4 = value.LoopbackSpaceV4,
+                LoopbackSpaceV6 = value.LoopbackSpaceV6,
                 NetworksSpaceV4 = value.NetworksSpaceV4,
                 NetworksSpaceV6 = value.NetworksSpaceV6,
                 NetworksIpVersion = version,

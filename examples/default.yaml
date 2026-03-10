@@ -1,6 +1,7 @@
 111:
   igp: "ibgp"
-  loopback_space: "2001:1:1:1::/64"
+  loopback_space_v4: "10.10.10.0/24"
+  loopback_space_v6: "2001:1:1:1::/64"
   networks_space_v4: "192.168.1.0/24"
   networks_space_v6: "2001:db8:1::/48"
   networks: "both"
@@ -8,7 +9,7 @@
   routers:
     R1:
       id: "1.1.1.1"
-      loopback: "2001:1:1:1::0/128"
+      loopback_v6: "2001:1:1:1::1"
       interfaces:
         GigabitEthernet0/0:
           neighbour: "112:R2"

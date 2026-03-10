@@ -9,7 +9,9 @@ public class As
 {
     public string? Igp { get; init; }
 
-    public IPNetwork? LoopbackSpace { get; init; }
+    public IPNetwork? LoopbackSpaceV4 { get; init; }
+
+    public IPNetwork? LoopbackSpaceV6 { get; init; }
 
     public IPNetwork? NetworksSpaceV4 { get; init; }
 

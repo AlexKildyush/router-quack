@@ -1,3 +1,4 @@
+using System.Net;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using RouterQuack.Core.Validators;
@@ -10,13 +11,12 @@ public class ValidLoopbackAddressesTests
     private readonly ILogger<ValidLoopbackAddresses> _logger = Substitute.For<ILogger<ValidLoopbackAddresses>>();
 
     [Test]
-    [Arguments("10.0.0.1", 32)]
-    public async Task Validate_ValidIpv4Loopback_NoErrors(string address, int prefixLength)
+    public async Task Validate_ValidIpv4Loopback_NoErrors()
     {
         var asses = new List<As>
         {
             TestData.CreateAs(
-                routers: [TestData.CreateRouter(loopbackAddress: TestData.CreateAddress(address, prefixLength))])
+                routers: [TestData.CreateRouter(loopbackAddressV4: IPAddress.Parse("10.0.0.1"))])
         };
 
         var context = ContextFactory.Create(asses: asses);
@@ -27,13 +27,12 @@ public class ValidLoopbackAddressesTests
     }
 
     [Test]
-    [Arguments("2001:db8::1", 128)]
-    public async Task Validate_ValidIpv6Loopback_NoErrors(string address, int prefixLength)
+    public async Task Validate_ValidIpv6Loopback_NoErrors()
     {
         var asses = new List<As>
         {
             TestData.CreateAs(
-                routers: [TestData.CreateRouter(loopbackAddress: TestData.CreateAddress(address, prefixLength))])
+                routers: [TestData.CreateRouter(loopbackAddressV6: IPAddress.Parse("2001:db8::1"))])
         };
 
         var context = ContextFactory.Create(asses: asses);
@@ -41,40 +40,6 @@ public class ValidLoopbackAddressesTests
         validator.Validate();
 
         await Assert.That(validator.ErrorsOccurred).IsFalse();
-    }
-
-    [Test]
-    [Arguments("10.0.0.1", 24)]
-    public async Task Validate_InvalidIpv4Prefix_SetsErrorsOccurred(string address, int prefixLength)
-    {
-        var asses = new List<As>
-        {
-            TestData.CreateAs(
-                routers: [TestData.CreateRouter(loopbackAddress: TestData.CreateAddress(address, prefixLength))])
-        };
-
-        var context = ContextFactory.Create(asses: asses);
-        var validator = new ValidLoopbackAddresses(_logger, context);
-        validator.Validate();
-
-        await Assert.That(validator.ErrorsOccurred).IsTrue();
-    }
-
-    [Test]
-    [Arguments("2001:db8::1", 64)]
-    public async Task Validate_InvalidIpv6Prefix_SetsErrorsOccurred(string address, int prefixLength)
-    {
-        var asses = new List<As>
-        {
-            TestData.CreateAs(
-                routers: [TestData.CreateRouter(loopbackAddress: TestData.CreateAddress(address, prefixLength))])
-        };
-
-        var context = ContextFactory.Create(asses: asses);
-        var validator = new ValidLoopbackAddresses(_logger, context);
-        validator.Validate();
-
-        await Assert.That(validator.ErrorsOccurred).IsTrue();
     }
 
     [Test]
@@ -82,7 +47,7 @@ public class ValidLoopbackAddressesTests
     {
         var asses = new List<As>
         {
-            TestData.CreateAs(routers: [TestData.CreateRouter(loopbackAddress: null)])
+            TestData.CreateAs(routers: [TestData.CreateRouter(loopbackAddressV4: null, loopbackAddressV6: null)])
         };
 
         var context = ContextFactory.Create(asses: asses);

@@ -1,5 +1,4 @@
 using System.Net;
-using System.Net.Sockets;
 using RouterQuack.Core.Extensions;
 using RouterQuack.Core.Utils;
 
@@ -20,26 +19,35 @@ public class GenerateLoopbackAddresses(
 
     public void Process()
     {
+        GenerateV4LoopbackAddresses();
+        GenerateV6LoopbackAddresses();
+    }
+
+    private void GenerateV4LoopbackAddresses()
+    {
         var routers = Context.Asses
+            .Where(a => a.LoopbackSpaceV4 is not null)
             .SelectMany(a => a.Routers)
-            .Where(r => r is { External: false, LoopbackAddress: null });
+            .Where(r => r is { External: false, LoopbackAddressV4: null });
 
         _usedAddresses = Context.Asses
+            .Where(a => a.LoopbackSpaceV4 is not null)
             .SelectMany(a => a.Routers)
-            .Where(r => r.LoopbackAddress != null)
-            .Select(r => r.LoopbackAddress!.IpAddress)
+            .Where(r => r.LoopbackAddressV4 != null)
+            .Select(r => r.LoopbackAddressV4!)
             .ToHashSet();
+
+        _addressCounter = 1;
 
         foreach (var router in routers)
         {
-            if (!router.ParentAs.LoopbackSpace.HasValue)
+            if (!router.ParentAs.LoopbackSpaceV4.HasValue)
             {
                 this.Log(router, "Couldn't generate loopback address (no loopback space defined in AS)");
                 continue;
             }
 
-            var space = router.ParentAs.LoopbackSpace.Value;
-            var maxBits = space.BaseAddress.AddressFamily == AddressFamily.InterNetworkV6 ? 128 : 32;
+            var space = router.ParentAs.LoopbackSpaceV4.Value;
             IPAddress ip;
             try
             {
@@ -51,9 +59,51 @@ public class GenerateLoopbackAddresses(
                 return;
             }
 
-            router.LoopbackAddress = new(new(ip, maxBits), ip);
-            logger.LogDebug("Generated loopback {IpNetwork} for router {RouterName} in AS {AsNumber}",
-                new IPNetwork(ip, maxBits), router.Name, router.ParentAs.Number);
+            router.LoopbackAddressV4 = ip;
+            logger.LogDebug("Generated loopback {IpAddress} for router {RouterName} in AS {AsNumber}",
+                ip, router.Name, router.ParentAs.Number);
+        }
+    }
+
+    private void GenerateV6LoopbackAddresses()
+    {
+        var routers = Context.Asses
+            .Where(a => a.LoopbackSpaceV6 is not null)
+            .SelectMany(a => a.Routers)
+            .Where(r => r is { External: false, LoopbackAddressV6: null });
+
+        _usedAddresses = Context.Asses
+            .Where(a => a.LoopbackSpaceV6 is not null)
+            .SelectMany(a => a.Routers)
+            .Where(r => r.LoopbackAddressV6 != null)
+            .Select(r => r.LoopbackAddressV6!)
+            .ToHashSet();
+
+        _addressCounter = 1;
+
+        foreach (var router in routers)
+        {
+            if (!router.ParentAs.LoopbackSpaceV6.HasValue)
+            {
+                this.Log(router, "Couldn't generate loopback address (no loopback space defined in AS)");
+                continue;
+            }
+
+            var space = router.ParentAs.LoopbackSpaceV6.Value;
+            IPAddress ip;
+            try
+            {
+                ip = networkUtils.GenerateAvailableIpAddress(space, ref _addressCounter, _usedAddresses);
+            }
+            catch (InvalidOperationException)
+            {
+                this.Log(router.ParentAs, "Loopback space has overflowed");
+                return;
+            }
+
+            router.LoopbackAddressV6 = ip;
+            logger.LogDebug("Generated loopback {IpAddress} for router {RouterName} in AS {AsNumber}",
+                ip, router.Name, router.ParentAs.Number);
         }
     }
 }

@@ -7,10 +7,11 @@ internal static class TestData
     internal static As CreateAs(
         int number = 1,
         IgpType igp = IgpType.Ibgp,
-        IPNetwork? loopbackSpace = null,
+        IPNetwork? loopbackSpaceV4 = null,
+        IPNetwork? loopbackSpaceV6 = null,
         IPNetwork? networksSpaceV4 = null,
         IPNetwork? networksSpaceV6 = null,
-        IpVersion networksIpVersion = IpVersion.Ipv6,
+        IpVersion networksIpVersion = IpVersion.Ipv6 | IpVersion.Ipv4,
         ICollection<Router>? routers = null)
     {
         var routerList = routers?.ToList() ?? [];
@@ -19,7 +20,8 @@ internal static class TestData
         {
             Number = number,
             Igp = igp,
-            LoopbackSpace = loopbackSpace,
+            LoopbackSpaceV4 = loopbackSpaceV4,
+            LoopbackSpaceV6 = loopbackSpaceV6,
             NetworksSpaceV4 = networksSpaceV4,
             NetworksSpaceV6 = networksSpaceV6,
             NetworksIpVersion = networksIpVersion,
@@ -36,7 +38,8 @@ internal static class TestData
         string name = "R1",
         IPAddress? id = null,
         RouterBrand brand = RouterBrand.Cisco,
-        Address? loopbackAddress = null,
+        IPAddress? loopbackAddressV4 = null,
+        IPAddress? loopbackAddressV6 = null,
         bool external = false,
         ICollection<Interface>? interfaces = null,
         As? parentAs = null)
@@ -48,7 +51,8 @@ internal static class TestData
             Name = name,
             Id = id ?? IPAddress.Parse("1.2.3.4"),
             Brand = brand,
-            LoopbackAddress = loopbackAddress,
+            LoopbackAddressV4 = loopbackAddressV4,
+            LoopbackAddressV6 = loopbackAddressV6,
             External = external,
             Interfaces = interfaceList,
             ParentAs = parentAs!
