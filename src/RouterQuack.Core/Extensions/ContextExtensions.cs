@@ -5,21 +5,24 @@ namespace RouterQuack.Core.Extensions;
 /// </summary>
 public static class ContextExtensions
 {
-    /// <summary>
-    /// Mark the current execution context as failed.
-    /// </summary>
     /// <param name="context">The execution context to update.</param>
-    public static void ApplyError(this Context context)
+    extension(Context context)
     {
-        context.ErrorsOccurred = true;
-    }
-    /// <summary>
-    /// Mark the current execution context as warning.
-    /// </summary>
-    /// <param name="context">The execution context to update.</param>
-    public static void ApplyWarning(this Context context)
-    {
-        if (context.Strict)
+        /// <summary>
+        /// Mark the current execution context as failed.
+        /// </summary>
+        public void ApplyError()
+        {
             context.ErrorsOccurred = true;
+        }
+
+        /// <summary>
+        /// Mark the current execution context as warning.
+        /// </summary>
+        public void ApplyWarning()
+        {
+            if (context.Strict)
+                context.ErrorsOccurred = true;
+        }
     }
 }
