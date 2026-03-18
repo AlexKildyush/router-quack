@@ -33,28 +33,4 @@ public class RouterUtilsTests
         await Assert.That(id.AddressFamily).IsEqualTo(AddressFamily.InterNetwork);
         await Assert.That(id.GetAddressBytes()).Count().IsEqualTo(4);
     }
-
-    [Test]
-    [Arguments(null, RouterBrand.Cisco, null)]
-    [Arguments(null, RouterBrand.Cisco, RouterBrand.Cisco)]
-    [Arguments("cisco", RouterBrand.Cisco, null)]
-    [Arguments("Cisco", RouterBrand.Cisco, null)]
-    [Arguments("CISCO", RouterBrand.Cisco, null)]
-    public async Task ParseBrand_ValidInput_ReturnsCorrectBrand(
-        string? input,
-        RouterBrand expected,
-        RouterBrand? defaultBrand)
-    {
-        await Assert.That(() => _utils.ParseBrand(input, defaultBrand)).IsEqualTo(expected);
-    }
-
-    [Test]
-    [Arguments("invalid")]
-    [Arguments("unknown")]
-    [Arguments("juniper")]
-    public async Task ParseBrand_InvalidInput_ThrowsArgumentException(string input)
-    {
-        await Assert.That(() => _utils.ParseBrand(input))
-            .Throws<ArgumentException>();
-    }
 }

@@ -9,7 +9,7 @@ public class Router
 {
     public IPAddress? Id { get; init; }
 
-    public string? Brand { get; init; }
+    public RouterBrand? Brand { get; init; }
 
     public IPAddress? LoopbackV4 { get; init; }
 

@@ -8,7 +8,7 @@ public class Interface
 {
     public required string Neighbour { get; init; }
 
-    public string? Bgp { get; init; }
+    public BgpRelationship Bgp { get; init; } = BgpRelationship.None;
 
     public ICollection<string>? Addresses { get; init; }
 }

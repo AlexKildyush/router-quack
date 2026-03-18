@@ -27,19 +27,4 @@ public sealed class RouterUtils
 
         return new(bytes);
     }
-
-    /// <param name="brand">A router's brand (string format).</param>
-    /// <param name="defaultBrand">The default brand, if <paramref name="brand"/> is <c>null</c>.</param>
-    /// <returns>The corresponding router brand (Enum format).</returns>
-    /// <exception cref="ArgumentException">Non <c>null</c> and unknown router brand.</exception>
-    [Pure]
-    public RouterBrand ParseBrand(string? brand, RouterBrand? defaultBrand = null)
-    {
-        if (brand == null)
-            return defaultBrand ?? RouterBrand.Cisco;
-
-        return Enum.TryParse<RouterBrand>(brand, true, out var routerBrand)
-            ? routerBrand
-            : throw new ArgumentException("Couldn't parse router brand");
-    }
 }

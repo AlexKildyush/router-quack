@@ -19,7 +19,7 @@ public class ValidNetworkSpacesTests
             TestData.CreateAs(
                 networksSpaceV4: IPNetwork.Parse(v4Space),
                 networksSpaceV6: IPNetwork.Parse(v6Space),
-                networksIpVersion: IpVersion.Ipv4 | IpVersion.Ipv6)
+                ipVersion: IpVersion.Ipv4 | IpVersion.Ipv6)
         };
 
         var context = ContextFactory.Create(asses: asses);
@@ -37,7 +37,7 @@ public class ValidNetworkSpacesTests
         {
             TestData.CreateAs(
                 networksSpaceV4: IPNetwork.Parse(space),
-                networksIpVersion: IpVersion.Ipv4)
+                ipVersion: IpVersion.Ipv4)
         };
 
         var context = ContextFactory.Create(asses: asses);
@@ -55,7 +55,7 @@ public class ValidNetworkSpacesTests
         {
             TestData.CreateAs(
                 networksSpaceV6: IPNetwork.Parse(space),
-                networksIpVersion: IpVersion.Ipv6)
+                ipVersion: IpVersion.Ipv6)
         };
 
         var context = ContextFactory.Create(asses: asses);
@@ -73,7 +73,7 @@ public class ValidNetworkSpacesTests
             TestData.CreateAs(
                 routers: [TestData.CreateRouter()],
                 networksSpaceV4: null,
-                networksIpVersion: IpVersion.Ipv4)
+                ipVersion: IpVersion.Ipv4)
         };
 
         var context = ContextFactory.Create(asses: asses);
@@ -91,7 +91,7 @@ public class ValidNetworkSpacesTests
             TestData.CreateAs(
                 routers: [TestData.CreateRouter()],
                 networksSpaceV6: null,
-                networksIpVersion: IpVersion.Ipv6)
+                ipVersion: IpVersion.Ipv6)
         };
 
         var context = ContextFactory.Create(asses: asses);

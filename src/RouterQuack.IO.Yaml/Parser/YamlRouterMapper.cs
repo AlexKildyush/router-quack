@@ -1,16 +1,12 @@
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
-using RouterQuack.Core.Utils;
 
 namespace RouterQuack.IO.Yaml.Parser;
 
 /// <summary>
 /// Maps <see cref="YamlRouter"/> definitions to core <see cref="Router"/> models.
 /// </summary>
-public class YamlRouterMapper(
-    ILogger<YamlRouterMapper> logger,
-    RouterUtils routerUtils,
-    YamlInterfaceMapper yamlInterfaceMapper)
+public class YamlRouterMapper(ILogger<YamlRouterMapper> logger, YamlInterfaceMapper yamlInterfaceMapper)
 {
     /// <summary>
     /// Convert <see cref="YamlRouter"/> definitions of an AS into core router models.
@@ -40,22 +36,11 @@ public class YamlRouterMapper(
                 continue;
             }
 
-            RouterBrand routerBrand;
-            try
-            {
-                routerBrand = routerUtils.ParseBrand(value.Brand, defaultBrand);
-            }
-            catch (ArgumentException e)
-            {
-                LogError(context, "Router {RouterName} in AS number {AsNumber}: " + e.Message + '.', key, parentAs.Number);
-                routerBrand = routerUtils.ParseBrand(defaultBrand.ToString());
-            }
-
             var router = new Router
             {
                 Name = key,
                 Id = value.Id,
-                Brand = routerBrand,
+                Brand = value.Brand ?? defaultBrand,
                 LoopbackAddressV4 = value.LoopbackV4,
                 LoopbackAddressV6 = value.LoopbackV6,
                 Interfaces = [],

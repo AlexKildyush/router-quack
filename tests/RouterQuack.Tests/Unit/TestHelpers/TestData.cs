@@ -5,16 +5,16 @@ namespace RouterQuack.Tests.Unit.TestHelpers;
 
 internal static class TestData
 {
-    private static RouterUtils _routerUtils = new RouterUtils();
+    private static readonly RouterUtils RouterUtils = new RouterUtils();
 
     internal static As CreateAs(
         int number = 1,
-        IgpType igp = IgpType.Ibgp,
+        IgpType igp = IgpType.iBGP,
         IPNetwork? loopbackSpaceV4 = null,
         IPNetwork? loopbackSpaceV6 = null,
         IPNetwork? networksSpaceV4 = null,
         IPNetwork? networksSpaceV6 = null,
-        IpVersion networksIpVersion = IpVersion.Ipv6 | IpVersion.Ipv4,
+        IpVersion ipVersion = IpVersion.Ipv6 | IpVersion.Ipv4,
         ICollection<Router>? routers = null)
     {
         var routerList = routers?.ToList() ?? [];
@@ -27,7 +27,7 @@ internal static class TestData
             LoopbackSpaceV6 = loopbackSpaceV6,
             NetworksSpaceV4 = networksSpaceV4,
             NetworksSpaceV6 = networksSpaceV6,
-            NetworksIpVersion = networksIpVersion,
+            IpVersions = ipVersion,
             Routers = routerList
         };
 
@@ -63,7 +63,7 @@ internal static class TestData
         };
 
         if (useDefaultId)
-            router.Id ??= _routerUtils.GetDefaultId(name);
+            router.Id ??= RouterUtils.GetDefaultId(name);
 
         foreach (var @interface in interfaceList)
             SetParentRouter(@interface, router);
@@ -91,7 +91,7 @@ internal static class TestData
     internal static Address CreateAddress(string ip, int prefixLength)
     {
         var ipAddress = IPAddress.Parse(ip);
-        return new Address(new IPNetwork(ipAddress, prefixLength), ipAddress);
+        return new(new(ipAddress, prefixLength), ipAddress);
     }
 
     private static void SetParentAs(Router router, As parentAs)

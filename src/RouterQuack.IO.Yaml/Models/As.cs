@@ -7,7 +7,7 @@ namespace RouterQuack.IO.Yaml.Models;
 [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 public class As
 {
-    public string? Igp { get; init; }
+    public IgpType Igp { get; init; } = IgpType.iBGP;
 
     public IPNetwork? LoopbackSpaceV4 { get; init; }
 
@@ -17,11 +17,11 @@ public class As
 
     public IPNetwork? NetworksSpaceV6 { get; init; }
 
-    public string? Networks { get; init; }
+    public IpVersion Networks { get; init; } = IpVersion.Ipv4 | IpVersion.Ipv6;
 
-    public string? Brand { get; init; }
+    public RouterBrand Brand { get; init; } = RouterBrand.Cisco;
 
     public bool External { get; init; } = false;
 
-    public required IDictionary<string, Router> Routers { get; init; }
+    public required IDictionary<string, YamlRouter> Routers { get; init; }
 }

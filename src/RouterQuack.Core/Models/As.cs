@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Net;
 using System.Text;
@@ -10,15 +11,15 @@ public sealed class As
 
     public required IgpType Igp { get; init; }
 
-    public required IPNetwork? LoopbackSpaceV4 { get; init; }
+    public IPNetwork? LoopbackSpaceV4 { get; init; }
 
     public IPNetwork? LoopbackSpaceV6 { get; init; }
 
-    public required IPNetwork? NetworksSpaceV4 { get; init; }
+    public IPNetwork? NetworksSpaceV4 { get; init; }
 
-    public required IPNetwork? NetworksSpaceV6 { get; init; }
+    public IPNetwork? NetworksSpaceV6 { get; init; }
 
-    public required IpVersion NetworksIpVersion { get; init; }
+    public required IpVersion IpVersions { get; init; }
 
     public required ICollection<Router> Routers { get; set; }
 
@@ -45,9 +46,10 @@ public sealed class As
     }
 }
 
+[SuppressMessage("ReSharper", "InconsistentNaming")]
 public enum IgpType
 {
-    Ibgp
+    iBGP
 }
 
 [Flags]

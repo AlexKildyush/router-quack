@@ -8,13 +8,13 @@ public sealed class Router
 {
     public required string Name { get; init; }
 
-    public required IPAddress? Id { get; set; }
+    public IPAddress? Id { get; set; }
 
     public required RouterBrand Brand { get; init; }
 
-    public required IPAddress? LoopbackAddressV4 { get; set; }
+    public IPAddress? LoopbackAddressV4 { get; set; }
 
-    public required IPAddress? LoopbackAddressV6 { get; set; }
+    public IPAddress? LoopbackAddressV6 { get; set; }
 
     public required bool External { get; init; }
 

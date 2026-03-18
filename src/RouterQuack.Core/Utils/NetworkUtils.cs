@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Diagnostics.Contracts;
 using System.Net;
 using System.Net.Sockets;
 
@@ -9,26 +8,6 @@ namespace RouterQuack.Core.Utils;
 [SuppressMessage("ReSharper", "MemberCanBeMadeStatic.Global")]
 public sealed class NetworkUtils
 {
-    /// <param name="version">An IP version (string format).</param>
-    /// <returns>The corresponding IP version (Enum flags format).</returns>
-    /// /// <exception cref="ArgumentException">Non <c>null</c> and unknown networks IP version.</exception>
-    [Pure]
-    public IpVersion ParseIpVersion(string? version)
-    {
-        if (version == null)
-            return IpVersion.Ipv4 | IpVersion.Ipv6;
-
-        ReadOnlySpan<string> bothTokens = ["both", "dual", "dual stack", "dual_stack", "dual-stack"];
-        version = version.ToLowerInvariant();
-
-        if (bothTokens.Contains(version))
-            return IpVersion.Ipv4 | IpVersion.Ipv6;
-
-        return Enum.TryParse<IpVersion>(version, true, out var ipVersion)
-            ? ipVersion
-            : throw new ArgumentException("Couldn't parse IP version");
-    }
-
     /// <summary>
     /// Generate a unique <see cref="IPAddress"/> and add it to used addresses.
     /// </summary>

@@ -35,32 +35,6 @@ public class NetworkUtilsTests
     }
 
     [Test]
-    [Arguments("ipv4", IpVersion.Ipv4)]
-    [Arguments("IPv4", IpVersion.Ipv4)]
-    [Arguments("ipv6", IpVersion.Ipv6)]
-    [Arguments("IPv6", IpVersion.Ipv6)]
-    [Arguments(null, IpVersion.Ipv4 | IpVersion.Ipv6)]
-    [Arguments("both", IpVersion.Ipv4 | IpVersion.Ipv6)]
-    [Arguments("dual", IpVersion.Ipv4 | IpVersion.Ipv6)]
-    [Arguments("dual stack", IpVersion.Ipv4 | IpVersion.Ipv6)]
-    [Arguments("dual-stack", IpVersion.Ipv4 | IpVersion.Ipv6)]
-    [Arguments("dual_stack", IpVersion.Ipv4 | IpVersion.Ipv6)]
-    public async Task ParseIpVersion_ValidInput_ReturnsCorrectVersion(string? input, IpVersion expected)
-    {
-        await Assert.That(() => _utils.ParseIpVersion(input))
-            .IsEqualTo(expected);
-    }
-
-    [Test]
-    [Arguments("invalid")]
-    [Arguments("unknown")]
-    public async Task ParseIpVersion_InvalidInput_ThrowsArgumentException(string input)
-    {
-        await Assert.That(() => _utils.ParseIpVersion(input))
-            .Throws<ArgumentException>();
-    }
-
-    [Test]
     public async Task GenerateAvailableIpAddress_ReturnsUniqueAddresses()
     {
         var space = IPNetwork.Parse("192.168.0.0/24");

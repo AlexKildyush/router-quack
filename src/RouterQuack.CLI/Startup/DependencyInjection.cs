@@ -53,9 +53,7 @@ public static class DependencyInjection
         // Register utils
         builder.Services
             .AddSingleton<NetworkUtils>()
-            .AddSingleton<AsUtils>()
-            .AddSingleton<RouterUtils>()
-            .AddSingleton<InterfaceUtils>();
+            .AddSingleton<RouterUtils>();
 
         builder.Services
             .AddSingleton<YamlInterfaceMapper>()

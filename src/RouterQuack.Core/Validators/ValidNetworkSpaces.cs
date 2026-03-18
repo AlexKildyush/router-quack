@@ -28,8 +28,8 @@ public class ValidNetworkSpaces(ILogger<ValidNetworkSpaces> logger, Context cont
 
             if (!@as.FullyExternal
                 && @as
-                    is { NetworksSpaceV4: null, NetworksIpVersion: IpVersion.Ipv4 or BothVersions }
-                    or { NetworksSpaceV6: null, NetworksIpVersion: IpVersion.Ipv6 or BothVersions })
+                    is { NetworksSpaceV4: null, IpVersions: IpVersion.Ipv4 or BothVersions }
+                    or { NetworksSpaceV6: null, IpVersions: IpVersion.Ipv6 or BothVersions })
                 this.Log(@as, "The chosen networks version doesn't have a provided space");
         }
     }

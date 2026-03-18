@@ -10,7 +10,7 @@ internal static class BgpConfig
         var isBorderRouter = router.BorderRouter;
 
         // Neither eBGP nor iBGP.
-        if (!isBorderRouter && router.ParentAs.Igp != IgpType.Ibgp)
+        if (!isBorderRouter && router.ParentAs.Igp != IgpType.iBGP)
             return;
 
         builder.AppendLine(ConfigHeader);
