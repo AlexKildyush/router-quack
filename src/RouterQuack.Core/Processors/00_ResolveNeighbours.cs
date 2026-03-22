@@ -35,7 +35,10 @@ public class ResolveNeighbours(ILogger<ResolveNeighbours> logger, Context contex
     /// <remarks>Will generate an error if the neighbour is in an unknown AS or incorrectly formatted.</remarks>
     private void ReplaceNeighbour(ICollection<As> asses, Interface @interface)
     {
-        var neighbourReference = ParseNeighbourReference(@interface.Neighbour?.Name, @interface);
+        if (@interface.Neighbour!.Neighbour is not null)
+            return;
+
+        var neighbourReference = ParseNeighbourReference(@interface.Neighbour!.Name, @interface);
         var neighbour = ResolveNeighbour(asses, @interface, neighbourReference);
         if (neighbour is null)
             this.Log(@interface, "Could not resolve neighbour");
@@ -102,6 +105,7 @@ public class ResolveNeighbours(ILogger<ResolveNeighbours> logger, Context contex
         {
             case 1:
                 resolvedCandidate = resolvedCandidates[0];
+                resolvedCandidate.Neighbour = @interface;
                 return true;
             case > 1:
                 this.Log(@interface,
