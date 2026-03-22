@@ -40,9 +40,6 @@ public class ResolveNeighbours(ILogger<ResolveNeighbours> logger, Context contex
 
         var neighbourReference = ParseNeighbourReference(@interface.Neighbour!.Name, @interface);
         var neighbour = ResolveNeighbour(asses, @interface, neighbourReference);
-        if (neighbour is null)
-            this.Log(@interface, "Could not resolve neighbour");
-
         @interface.Neighbour = neighbour;
     }
 
@@ -69,7 +66,10 @@ public class ResolveNeighbours(ILogger<ResolveNeighbours> logger, Context contex
         var router = asses.FirstOrDefault(a => a.Number == neighbourReference.AsNumber)
             ?.Routers.FirstOrDefault(r => r.Name == neighbourReference.RouterName);
         if (router is null)
+        {
+            this.Log(@interface, "Could not resolve neighbour");
             return null;
+        }
 
         var candidates = router.Interfaces
             .Where(i => neighbourReference.InterfaceName is null || i.Name == neighbourReference.InterfaceName)
@@ -78,6 +78,8 @@ public class ResolveNeighbours(ILogger<ResolveNeighbours> logger, Context contex
             return resolvedCandidate;
         if (TryGetGuessedCandidate(candidates, @interface, neighbourReference, out var guessedCandidate))
             return guessedCandidate;
+
+        this.Log(@interface, "Neighbour likely referenced more than once");
         return null;
     }
 
