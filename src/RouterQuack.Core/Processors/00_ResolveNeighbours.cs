@@ -38,7 +38,7 @@ public class ResolveNeighbours(ILogger<ResolveNeighbours> logger, Context contex
         if (@interface.Neighbour!.Neighbour is not null)
             return;
 
-        var neighbourReference = ParseNeighbourReference(candidate.Neighbour?.Name, candidate);
+        var neighbourReference = new NeighbourReference(@interface.Neighbour!.Name, @interface);
         var neighbour = ResolveNeighbour(asses, @interface, neighbourReference);
         @interface.Neighbour = neighbour;
     }
@@ -111,7 +111,8 @@ public class ResolveNeighbours(ILogger<ResolveNeighbours> logger, Context contex
                 return true;
             case > 1:
                 this.Log(@interface,
-                    $"Neighbour path '{FormatNeighbourReference(neighbourReference)}' matches multiple interfaces; specify the neighbour interface explicitly");
+                    $"Neighbour path '{neighbourReference}' matches multiple interfaces; " +
+                    $"specify the neighbour interface explicitly");
                 resolvedCandidate = null;
                 return true;
             default:
@@ -131,7 +132,7 @@ public class ResolveNeighbours(ILogger<ResolveNeighbours> logger, Context contex
         [Pure]
         static bool ReferencePointsToInterface(Interface candidate, Interface current)
         {
-            var neighbourReference = ParseNeighbourReference(candidate.Neighbour?.Name, candidate);
+            var neighbourReference = new NeighbourReference(candidate.Neighbour?.Name, candidate);
             return neighbourReference.AsNumber == current.ParentRouter.ParentAs.Number
                    && neighbourReference.RouterName == current.ParentRouter.Name
                    && (neighbourReference.InterfaceName is null || neighbourReference.InterfaceName == current.Name);
@@ -170,43 +171,13 @@ public class ResolveNeighbours(ILogger<ResolveNeighbours> logger, Context contex
                 return true;
             case > 1:
                 this.Log(@interface,
-                    $"Neighbour resolution by guessing for path '{FormatNeighbourReference(neighbourReference)}' matches multiple interfaces; specify the neighbour interface explicitly");
+                    $"Neighbour resolution by guessing for path '{neighbourReference}' matches multiple " +
+                    $"interfaces; specify the neighbour interface explicitly");
                 guessedCandidate = null;
                 return true;
             default:
                 guessedCandidate = null;
                 return false;
         }
-    }
-
-    /// <summary>
-    /// Parse neighbour reference from path.
-    /// </summary>
-    /// <param name="neighbourPath">Path in `router[:interface]` or `as:router[:interface]` form.</param>
-    /// <param name="interface">The current interface.</param>
-    /// <returns>Parsed neighbour reference; invalid values produce an unresolvable reference.</returns>
-    [Pure]
-    private static NeighbourReference ParseNeighbourReference(string? neighbourPath, Interface @interface)
-    {
-        var segments = neighbourPath?.Split(':') ?? [];
-        return segments.Length switch
-        {
-            1 => new(@interface.ParentRouter.ParentAs.Number, segments[0], null),
-            2 when int.TryParse(segments[0], out var asNumber) => new(asNumber, segments[1], null),
-            2 => new(@interface.ParentRouter.ParentAs.Number, segments[0], segments[1]),
-            3 when int.TryParse(segments[0], out var asNumber) => new(asNumber, segments[1], segments[2]),
-            _ => new(0, string.Empty, null)
-        };
-    }
-
-    /// <summary>
-    /// Format a neighbour reference for logs and diagnostics.
-    /// </summary>
-    [Pure]
-    private static string FormatNeighbourReference(NeighbourReference neighbourReference)
-    {
-        return neighbourReference.InterfaceName is null
-            ? $"{neighbourReference.AsNumber}:{neighbourReference.RouterName}"
-            : $"{neighbourReference.AsNumber}:{neighbourReference.RouterName}:{neighbourReference.InterfaceName}";
     }
 }
