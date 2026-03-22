@@ -1,5 +1,6 @@
 using System.Diagnostics.Contracts;
 using RouterQuack.Core.Extensions;
+using RouterQuack.Core.Processors.Models;
 
 namespace RouterQuack.Core.Processors;
 
@@ -34,14 +35,11 @@ public class ResolveNeighbours(ILogger<ResolveNeighbours> logger, Context contex
     /// <remarks>Will generate an error if the neighbour is in an unknown AS or incorrectly formatted.</remarks>
     private void ReplaceNeighbour(ICollection<As> asses, Interface @interface)
     {
-        var neighbourPath = @interface.Neighbour?.Name.Split(':') ?? [];
-        var routerName = neighbourPath.Last();
-        var asNumber = AsNumberFromNeighbourPath(neighbourPath, @interface);
+        if (@interface.Neighbour!.Neighbour is not null)
+            return;
 
-        var neighbour = ResolveNeighbour(asses, @interface, asNumber, routerName);
-        if (neighbour is null)
-            this.Log(@interface, "Could not resolve neighbour");
-
+        var neighbourReference = new NeighbourReference(@interface.Neighbour!.Name, @interface);
+        var neighbour = ResolveNeighbour(asses, @interface, neighbourReference);
         @interface.Neighbour = neighbour;
     }
 
@@ -50,8 +48,7 @@ public class ResolveNeighbours(ILogger<ResolveNeighbours> logger, Context contex
     /// </summary>
     /// <param name="asses"></param>
     /// <param name="interface">The interface the neighbour of to resolve.</param>
-    /// <param name="asNumber">The AS number of <paramref name="interface"/>'s neighbour.</param>
-    /// <param name="routerName">The router's name of <paramref name="interface"/>'s neighbour.</param>
+    /// <param name="neighbourReference">Parsed neighbour path.</param>
     /// <returns>The resolved interface, or <c>null</c>.</returns>
     /// <remarks>
     /// <paramref name="interface"/> must be an indirect child of an As in <paramref name="asses"/>. <br /><br />
@@ -59,60 +56,128 @@ public class ResolveNeighbours(ILogger<ResolveNeighbours> logger, Context contex
     /// neighbour, but wasn't parsed successfully due to errors in its configuration
     /// </remarks>
     [Pure]
-    private Interface? ResolveNeighbour(ICollection<As> asses, Interface @interface, int asNumber, string routerName)
+    private Interface? ResolveNeighbour(ICollection<As> asses, Interface @interface,
+        NeighbourReference neighbourReference)
     {
         /* For large scale, consider pre-building lookups for interfaces by (asNumber, routerName, interfaceName)
          * to avoid O(n) FirstOrDefault calls.
          * Using lookups would bring us down from O(R * I) to O(R + I).
          */
-        return asses.FirstOrDefault(a => a.Number == asNumber)
-            ?.Routers.FirstOrDefault(r => r.Name == routerName)
-            ?.Interfaces.FirstOrDefault(FilterNeighbours);
-
-        /* Filter in interfaces that don't have neighbours (dummy neighbour with our actual neighbour's name)
-         * Or neighbours that do have neighbours, that happen to be ourselves
-         * In both cases, the neighbour is not null per se.
-         * If nothing matches, try to filter in interfaces with null neighbours (that failed to resolve their neighbour)
-         */
-        bool FilterNeighbours(Interface i) =>
-            (i.Neighbour is not null && (
-                (i.Neighbour.Neighbour is null && i.Neighbour.Name.Split(':').Last() == @interface.ParentRouter.Name)
-                || (i.Neighbour.Neighbour is not null && i.Neighbour == @interface)))
-            || FilterNeighboursWithWarnings(i);
-
-        /* Filter in interfaces with null neighbours, but their router's name matches (and FilterNeighbours())
-         * This is useful when our neighbour has been parsed first but unsuccessfully.
-         * If a neighbour matched here, log a warning.
-         */
-        bool FilterNeighboursWithWarnings(Interface i)
+        var router = asses.FirstOrDefault(a => a.Number == neighbourReference.AsNumber)
+            ?.Routers.FirstOrDefault(r => r.Name == neighbourReference.RouterName);
+        if (router is null)
         {
-            var result = i.Neighbour is null && i.ParentRouter.Name == routerName;
+            this.Log(@interface, "Could not resolve neighbour");
+            return null;
+        }
 
-            // ReSharper disable once InvertIf
-            if (result)
-            {
-                this.Log(@interface, $"Neighbour resolved by guessing ({routerName}:{i.Name})",
-                    logLevel: LogLevel.Warning);
+        var candidates = router.Interfaces
+            .Where(i => neighbourReference.InterfaceName is null || i.Name == neighbourReference.InterfaceName)
+            .ToArray();
+        if (TryGetResolvedCandidate(candidates, @interface, neighbourReference, out var resolvedCandidate))
+            return resolvedCandidate;
+        if (TryGetGuessedCandidate(candidates, @interface, neighbourReference, out var guessedCandidate))
+            return guessedCandidate;
 
-                i.Neighbour = @interface;
-            }
+        this.Log(@interface, "Neighbour likely referenced more than once");
+        return null;
+    }
 
-            return result;
+    /// <summary>
+    /// Try to resolve a neighbour from candidates that already point back to the current interface.
+    /// </summary>
+    /// <param name="candidates">Candidate interfaces on the target router.</param>
+    /// <param name="interface">Interface whose neighbour is being resolved.</param>
+    /// <param name="neighbourReference">Parsed neighbour path used for diagnostics.</param>
+    /// <param name="resolvedCandidate">Resolved interface, or <c>null</c> if ambiguity is detected.</param>
+    /// <returns>
+    /// <c>true</c> if this method reached a final decision; otherwise <c>false</c> when no resolved candidate exists.
+    /// </returns>
+    private bool TryGetResolvedCandidate(
+        Interface[] candidates,
+        Interface @interface,
+        NeighbourReference neighbourReference,
+        out Interface? resolvedCandidate)
+    {
+        var resolvedCandidates = candidates
+            .Where(FilterResolvedNeighbours)
+            .ToArray();
+
+        switch (resolvedCandidates.Length)
+        {
+            case 1:
+                resolvedCandidate = resolvedCandidates[0];
+                resolvedCandidate.Neighbour = @interface;
+                return true;
+            case > 1:
+                this.Log(@interface,
+                    $"Neighbour path '{neighbourReference}' matches multiple interfaces; " +
+                    $"specify the neighbour interface explicitly");
+                resolvedCandidate = null;
+                return true;
+            default:
+                resolvedCandidate = null;
+                return false;
+        }
+
+        // Only keep unresolved neighbours
+        bool FilterResolvedNeighbours(Interface i)
+        {
+            return i.Neighbour is not null && (
+                (i.Neighbour.Neighbour is null && ReferencePointsToInterface(i, @interface))
+                || (i.Neighbour.Neighbour is not null && i.Neighbour == @interface));
+        }
+
+        // Determine whether an unresolved neighbour declaration points to the current interface.
+        [Pure]
+        static bool ReferencePointsToInterface(Interface candidate, Interface current)
+        {
+            var neighbourReference = new NeighbourReference(candidate.Neighbour?.Name, candidate);
+            return neighbourReference.AsNumber == current.ParentRouter.ParentAs.Number
+                   && neighbourReference.RouterName == current.ParentRouter.Name
+                   && (neighbourReference.InterfaceName is null || neighbourReference.InterfaceName == current.Name);
         }
     }
 
     /// <summary>
-    /// Get AS number from split neighbour path (separator is ':').
+    /// Try to resolve a neighbour by guessing among unresolved candidate interfaces.
     /// </summary>
-    /// <param name="neighbourPath">Array representing the path.</param>
-    /// <param name="interface">The current interface.</param>
-    /// <returns>AS number if success, else 0.</returns>
-    [Pure]
-    private static int AsNumberFromNeighbourPath(string[] neighbourPath, Interface @interface)
-        => neighbourPath.Length switch
+    /// <param name="candidates">Candidate interfaces on the target router.</param>
+    /// <param name="interface">Interface whose neighbour is being resolved.</param>
+    /// <param name="neighbourReference">Parsed neighbour path used for diagnostics.</param>
+    /// <param name="guessedCandidate">Resolved interface, or <c>null</c> if guessing is ambiguous.</param>
+    /// <returns>
+    /// <c>true</c> if this method reached a final decision; otherwise <c>false</c> when guessing cannot resolve anything.
+    /// </returns>
+    private bool TryGetGuessedCandidate(
+        Interface[] candidates,
+        Interface @interface,
+        NeighbourReference neighbourReference,
+        out Interface? guessedCandidate)
+    {
+        var guessedCandidates = candidates
+            .Where(i => i.Neighbour is null)
+            .ToArray();
+
+        switch (guessedCandidates.Length)
         {
-            1 => @interface.ParentRouter.ParentAs.Number,
-            2 => int.TryParse(neighbourPath[0], out var asNumber) ? asNumber : 0,
-            _ => 0
-        };
+            case 1:
+                guessedCandidate = guessedCandidates[0];
+                this.Log(@interface,
+                    $"Neighbour resolved by guessing ({guessedCandidate.ParentRouter.Name}:{guessedCandidate.Name})",
+                    logLevel: LogLevel.Warning);
+
+                guessedCandidate.Neighbour = @interface;
+                return true;
+            case > 1:
+                this.Log(@interface,
+                    $"Neighbour resolution by guessing for path '{neighbourReference}' matches multiple " +
+                    $"interfaces; specify the neighbour interface explicitly");
+                guessedCandidate = null;
+                return true;
+            default:
+                guessedCandidate = null;
+                return false;
+        }
+    }
 }
