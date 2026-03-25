@@ -23,7 +23,7 @@ internal static class BgpConfig
             .ToArray();
 
         var ebgpNeighbours = router.Interfaces
-            .Where(r => r.Bgp != BgpRelationship.None)
+            .Where(i => i.Bgp != BgpRelationship.None && i.Bgp != BgpRelationship.Internal)
             .Select(i => i.Neighbour!)
             .ToArray();
 
@@ -40,6 +40,7 @@ internal static class BgpConfig
     private const string ConfigStart =
         """
          bgp log-neighbor-changes
+         bgp graceful-restart
          no bgp default ipv4-unicast
         """;
 
