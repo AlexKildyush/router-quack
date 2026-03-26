@@ -8,7 +8,6 @@ namespace RouterQuack.IO.Cisco;
 
 public class CiscoWriter(ILogger<CiscoWriter> logger, Context context) : IConfigFileWriter
 {
-    public bool ErrorsOccurred { get; set; }
     public string BeginMessage => "Writing Cisco config files";
     public ILogger Logger { get; } = logger;
     public Context Context { get; } = context;
@@ -41,6 +40,7 @@ public class CiscoWriter(ILogger<CiscoWriter> logger, Context context) : IConfig
                 BgpConfig.ApplyBgpConfig(builder, router);
                 UnusedServicesConfig.ApplyUnusedServicesConfig(builder);
                 LoggingConfig.ApplyLoggingConfig(builder);
+                BgpPolicyConfig.ApplyPolicyConfig(builder, router.ParentAs.Number, router.Interfaces);
                 builder.Append("end");
 
                 using var file = new FileStream(Path.Join(path, $"{router.Name}.cfg"), FileMode.Create);
